@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../data/content/app_content.dart';
+import '../../theme/app_theme.dart';
 import '../../data/models/cv_models.dart';
 import '../../data/models/project_models.dart';
 import '../../data/repositories/cv_repository.dart';
@@ -356,7 +357,7 @@ class _AboutSection extends StatelessWidget {
   }
 }
 
-class _ProjectsSection extends StatelessWidget {
+class _ProjectsSection extends StatefulWidget {
   const _ProjectsSection({
     required this.locale,
     required this.projects,
@@ -366,52 +367,125 @@ class _ProjectsSection extends StatelessWidget {
   final List<ProjectViewModel> projects;
 
   @override
+  State<_ProjectsSection> createState() => _ProjectsSectionState();
+}
+
+class _ProjectsSectionState extends State<_ProjectsSection> {
+  final _scrollController = ScrollController();
+
+  static const _cardWidth = 300.0;
+  static const _cardHeight = 520.0;
+  static const _cardSpacing = 18.0;
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void _scrollBy(double delta) {
+    if (!_scrollController.hasClients) return;
+    _scrollController.animateTo(
+      (_scrollController.offset + delta)
+          .clamp(0.0, _scrollController.position.maxScrollExtent),
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeOutCubic,
+    );
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          appStrings.projectsEyebrow.of(locale),
-          style: Theme.of(context).textTheme.bodyMedium,
-        ),
-        const SizedBox(height: 8),
-        Text(
-          appStrings.sectionProjects.of(locale),
-          style: Theme.of(context).textTheme.displayMedium,
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    appStrings.projectsEyebrow.of(widget.locale),
+                    style: Theme.of(context).textTheme.bodyMedium,
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    appStrings.sectionProjects.of(widget.locale),
+                    style: Theme.of(context).textTheme.displayMedium,
+                  ),
+                ],
+              ),
+            ),
+            Row(
+              children: [
+                _NavButton(
+                  icon: Icons.arrow_back,
+                  onTap: () => _scrollBy(-(_cardWidth + _cardSpacing)),
+                ),
+                const SizedBox(width: 8),
+                _NavButton(
+                  icon: Icons.arrow_forward,
+                  onTap: () => _scrollBy(_cardWidth + _cardSpacing),
+                ),
+              ],
+            ),
+          ],
         ),
         const SizedBox(height: 10),
         Text(
-          appStrings.projectsBody.of(locale),
+          appStrings.projectsBody.of(widget.locale),
           style: Theme.of(context).textTheme.bodyLarge,
         ),
         const SizedBox(height: 20),
-        LayoutBuilder(
-          builder: (context, constraints) {
-            final columns = constraints.maxWidth >= 980
-                ? 3
-                : constraints.maxWidth >= 700
-                    ? 2
-                    : 1;
-            final itemWidth = (constraints.maxWidth - ((columns - 1) * 18)) / columns;
-
-            return Wrap(
-              spacing: 18,
-              runSpacing: 18,
-              children: projects
-                  .map(
-                    (project) => SizedBox(
-                      width: itemWidth,
-                      child: _ProjectCard(
-                        locale: locale,
-                        project: project,
-                      ),
-                    ),
-                  )
-                  .toList(),
-            );
-          },
+        SizedBox(
+          height: _cardHeight,
+          child: ListView.separated(
+            controller: _scrollController,
+            scrollDirection: Axis.horizontal,
+            itemCount: widget.projects.length,
+            separatorBuilder: (_, _) => const SizedBox(width: _cardSpacing),
+            itemBuilder: (_, i) => SizedBox(
+              width: _cardWidth,
+              child: _ProjectCard(
+                locale: widget.locale,
+                project: widget.projects[i],
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(height: 16),
+        Center(
+          child: TextButton(
+            onPressed: () => openExternalUrl(profileData.githubUrl),
+            child: Text(appStrings.ctaAllProjects.of(widget.locale)),
+          ),
         ),
       ],
+    );
+  }
+}
+
+class _NavButton extends StatelessWidget {
+  const _NavButton({required this.icon, required this.onTap});
+
+  final IconData icon;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(999),
+      child: Container(
+        width: 44,
+        height: 44,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          border: Border.all(color: AppTheme.ink.withValues(alpha: 0.15)),
+        ),
+        child: Icon(icon, size: 20),
+      ),
     );
   }
 }
@@ -435,6 +509,7 @@ class _ProjectCard extends StatelessWidget {
           padding: const EdgeInsets.all(20),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.max,
             children: [
               _ProjectPreview(project: project),
               const SizedBox(height: 18),
@@ -471,7 +546,7 @@ class _ProjectCard extends StatelessWidget {
                     .map((item) => Chip(label: Text(item)))
                     .toList(),
               ),
-              const SizedBox(height: 14),
+              const Spacer(),
               Row(
                 children: [
                   Text(
@@ -505,55 +580,23 @@ class _ProjectPreview extends StatelessWidget {
       aspectRatio: 1.2,
       child: DecoratedBox(
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(24),
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              project.meta.primaryColor,
-              project.meta.secondaryColor,
-            ],
-          ),
+          borderRadius: BorderRadius.circular(20),
+          color: const Color(0xFF181818),
         ),
-        child: Stack(
-          children: [
-            Positioned(
-              top: 18,
-              left: 18,
-              child: Container(
-                width: 86,
-                height: 12,
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.68),
-                  borderRadius: BorderRadius.circular(999),
-                ),
+        child: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Text(
+              project.meta.repoName,
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 22,
+                fontWeight: FontWeight.w700,
+                height: 1.2,
               ),
             ),
-            Positioned(
-              top: 42,
-              left: 18,
-              child: Container(
-                width: 132,
-                height: 12,
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.38),
-                  borderRadius: BorderRadius.circular(999),
-                ),
-              ),
-            ),
-            Positioned(
-              bottom: 20,
-              right: 20,
-              child: Container(
-                width: 88,
-                height: 88,
-                decoration: BoxDecoration(
-                  color: Colors.black.withValues(alpha: 0.12),
-                  borderRadius: BorderRadius.circular(26),
-                ),
-              ),
-            ),
-          ],
+          ),
         ),
       ),
     );

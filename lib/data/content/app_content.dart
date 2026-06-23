@@ -78,6 +78,7 @@ class AppStrings {
     required this.cvPageIntro,
     required this.cvToc,
     required this.cvBackHome,
+    required this.ctaAllProjects,
     required this.githubStars,
     required this.githubUpdated,
     required this.githubUnavailable,
@@ -109,6 +110,7 @@ class AppStrings {
   final LocalizedText cvPageIntro;
   final LocalizedText cvToc;
   final LocalizedText cvBackHome;
+  final LocalizedText ctaAllProjects;
   final LocalizedText githubStars;
   final LocalizedText githubUpdated;
   final LocalizedText githubUnavailable;
@@ -221,6 +223,7 @@ const appStrings = AppStrings(
   ),
   cvToc: LocalizedText(es: 'Índice', en: 'Contents'),
   cvBackHome: LocalizedText(es: 'Volver al inicio', en: 'Back home'),
+  ctaAllProjects: LocalizedText(es: 'Ver todos los proyectos', en: 'See all projects'),
   githubStars: LocalizedText(es: 'stars', en: 'stars'),
   githubUpdated: LocalizedText(es: 'Actualizado', en: 'Updated'),
   githubUnavailable: LocalizedText(
