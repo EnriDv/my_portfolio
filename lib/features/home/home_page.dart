@@ -374,7 +374,7 @@ class _ProjectsSectionState extends State<_ProjectsSection> {
   final _scrollController = ScrollController();
 
   static const _cardWidth = 300.0;
-  static const _cardHeight = 520.0;
+  static const _cardHeight = 530.0;
   static const _cardSpacing = 18.0;
 
   @override
